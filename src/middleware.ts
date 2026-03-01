@@ -2,6 +2,18 @@ import { createServerClient } from "@supabase/ssr"
 import { NextResponse, type NextRequest } from "next/server"
 
 export async function middleware(request: NextRequest) {
+  const isAuthPage = request.nextUrl.pathname === "/login"
+  const isSharePage = request.nextUrl.pathname.startsWith("/share/")
+  const isApiRoute = request.nextUrl.pathname.startsWith("/api/")
+  const isAuthCallback = request.nextUrl.pathname === "/auth/callback"
+
+  // Keep callback/share/API paths unguarded.
+  if (isSharePage || isApiRoute || isAuthCallback) {
+    return NextResponse.next({
+      request,
+    })
+  }
+
   let supabaseResponse = NextResponse.next({
     request,
   })
@@ -32,16 +44,6 @@ export async function middleware(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser()
-
-  const isAuthPage = request.nextUrl.pathname === "/login"
-  const isSharePage = request.nextUrl.pathname.startsWith("/share/")
-  const isApiRoute = request.nextUrl.pathname.startsWith("/api/")
-  const isAuthCallback = request.nextUrl.pathname === "/auth/callback"
-
-  // Allow share pages, API routes, and auth callback without authentication
-  if (isSharePage || isApiRoute || isAuthCallback) {
-    return supabaseResponse
-  }
 
   // Redirect unauthenticated users to login (except login page)
   if (!user && !isAuthPage) {

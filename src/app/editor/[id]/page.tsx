@@ -10,11 +10,11 @@ import { LatexEditor } from "@/components/editor/latex-editor"
 import { PdfViewer } from "@/components/pdf-viewer"
 import { ErrorLog } from "@/components/error-log"
 import { Button } from "@/components/ui/button"
+import { ShareDialog } from "@/components/share-dialog"
 import { 
   ArrowLeft, 
   Play, 
   Download, 
-  Share2, 
   Loader2,
   CheckCircle,
   AlertCircle,
@@ -120,10 +120,7 @@ export default function EditorPage() {
               </a>
             </Button>
           )}
-          <Button variant="outline" size="sm" disabled>
-            <Share2 className="h-4 w-4 mr-2" />
-            Share
-          </Button>
+          <ShareDialog projectId={projectId} />
         </div>
       </header>
 

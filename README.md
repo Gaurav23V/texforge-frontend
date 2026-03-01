@@ -2,6 +2,15 @@
 
 A web-based LaTeX editor with real-time PDF preview, built with Next.js and Supabase.
 
+## Live Demo
+
+**Try it now**: https://texforge-frontend-lsmd.onrender.com
+
+- Sign in with Google
+- Create a LaTeX project
+- Compile and preview your PDF
+- Share with others via view-only links
+
 ## Features
 
 - Google OAuth authentication
@@ -133,12 +142,28 @@ pnpm lint
 
 ## Deployment
 
-Deploy to Vercel:
+### Render (Current Setup)
+
+The app is currently deployed on Render as a Node.js web service:
+
+1. Connect your GitHub repository to Render
+2. Set environment variables:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `NEXT_PUBLIC_COMPILER_URL` (your backend URL)
+   - `NEXT_PUBLIC_SITE_URL` (your frontend URL, for auth redirects)
+3. Build command: `npm install && npm run build`
+4. Start command: `npm start`
+
+### Vercel (Alternative)
 
 1. Connect your GitHub repository to Vercel
 2. Set environment variables in Vercel dashboard
 3. Deploy
 
+### Post-Deployment
+
 Remember to:
 - Update `NEXT_PUBLIC_COMPILER_URL` to your production backend URL
-- Add your Vercel domain to Supabase OAuth redirect URLs
+- Add your production domain to Supabase OAuth redirect URLs
+- Add your production domain to Google Cloud Console OAuth settings

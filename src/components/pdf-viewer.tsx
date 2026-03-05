@@ -1,12 +1,22 @@
 "use client"
 
-import { FileText } from "lucide-react"
+import { FileText, Loader2 } from "lucide-react"
 
 interface PdfViewerProps {
   url: string | null
+  isLoading?: boolean
 }
 
-export function PdfViewer({ url }: PdfViewerProps) {
+export function PdfViewer({ url, isLoading = false }: PdfViewerProps) {
+  if (isLoading && !url) {
+    return (
+      <div className="h-full flex flex-col items-center justify-center bg-slate-50 text-muted-foreground">
+        <Loader2 className="h-10 w-10 mb-4 animate-spin" />
+        <p className="text-sm">Loading latest PDF...</p>
+      </div>
+    )
+  }
+
   if (!url) {
     return (
       <div className="h-full flex flex-col items-center justify-center bg-slate-50 text-muted-foreground">

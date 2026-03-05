@@ -18,6 +18,8 @@ A web-based LaTeX editor with real-time PDF preview, built with Next.js and Supa
 - CodeMirror 6 editor with LaTeX syntax highlighting
 - Real-time PDF compilation via backend service
 - Autosave with debounced updates
+- Compile requests use inline editor buffer (no stale DB read race)
+- Latest compile wins: stale compile requests are cancelled client-side
 - View-only sharing via shareable links
 - PDF download
 
@@ -138,6 +140,33 @@ pnpm start
 
 # Lint
 pnpm lint
+
+# Run tests
+pnpm test
+```
+
+## Compile Behavior
+
+- Editor text in memory is the source of truth for compile requests.
+- The compile hook sends `{ project_id, tex }` so compile does not wait for autosave writes.
+- On editor open, the app loads and displays the latest successful compiled PDF (if available).
+- Duplicate compile requests for identical payloads are coalesced client-side.
+- Newer compile requests abort stale in-flight requests.
+- PDF preview URL adds a cache-bust query parameter using `compiled_at` to force iframe refresh when path remains unchanged.
+
+## Testing
+
+This repo uses Vitest + Testing Library for unit and hook tests.
+
+```bash
+# Run all tests once
+pnpm test
+
+# Watch mode
+pnpm test:watch
+
+# Coverage
+pnpm test:coverage
 ```
 
 ## Deployment

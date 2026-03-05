@@ -53,6 +53,10 @@ function formatErrorType(type: string): string {
       return "Dangerous content detected"
     case "storage_error":
       return "Storage error"
+    case "compiler_unavailable":
+      return "Compiler toolchain unavailable"
+    case "cancelled":
+      return "Compilation superseded by a newer request"
     default:
       return type
   }

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import { useProject } from "@/hooks/use-project"
@@ -30,7 +30,15 @@ export default function EditorPage() {
   const [tex, setTex] = useState<string | null>(null)
   const [editorState, setEditorState] = useState<EditorState>("idle")
   
-  const { compile, pdfUrl, compileError, isCompiling } = useCompile(projectId)
+  const {
+    compile,
+    loadLatestCompiledPdf,
+    pdfUrl,
+    downloadUrl,
+    isLoadingLatestPdf,
+    compileError,
+    isCompiling,
+  } = useCompile(projectId)
 
   const handleTexChange = useCallback((value: string) => {
     setTex(value)
@@ -51,7 +59,7 @@ export default function EditorPage() {
 
   const handleCompile = async () => {
     setEditorState("compiling")
-    const result = await compile()
+    const result = await compile({ tex: tex ?? project?.tex ?? "" })
     setEditorState(result.success ? "success" : "error")
     
     // Reset to idle after a delay if successful
@@ -60,10 +68,16 @@ export default function EditorPage() {
     }
   }
 
-  // Initialize tex from project when loaded
-  if (project && tex === null) {
-    setTex(project.tex)
-  }
+  useEffect(() => {
+    if (project && tex === null) {
+      setTex(project.tex)
+    }
+  }, [project, tex])
+
+  useEffect(() => {
+    if (!project?.id) return
+    void loadLatestCompiledPdf()
+  }, [project?.id, loadLatestCompiledPdf])
 
   if (loading) {
     return (
@@ -112,9 +126,9 @@ export default function EditorPage() {
             )}
             Compile
           </Button>
-          {pdfUrl && (
+          {downloadUrl && (
             <Button variant="outline" size="sm" asChild>
-              <a href={pdfUrl} download={`${project.name}.pdf`} target="_blank" rel="noopener noreferrer">
+              <a href={downloadUrl} download={`${project.name}.pdf`} target="_blank" rel="noopener noreferrer">
                 <Download className="h-4 w-4 mr-2" />
                 Download
               </a>
@@ -140,7 +154,7 @@ export default function EditorPage() {
             <ErrorLog error={compileError} onDismiss={() => {}} />
           ) : null}
           <div className="flex-1">
-            <PdfViewer url={pdfUrl} />
+            <PdfViewer url={pdfUrl} isLoading={isLoadingLatestPdf} />
           </div>
         </div>
       </div>

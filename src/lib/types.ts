@@ -32,3 +32,8 @@ export interface CompileResponse {
   error_type?: string
   log?: string
 }
+
+export interface LatestPdfResponse {
+  pdf_url: string | null
+  compiled_at: string | null
+}

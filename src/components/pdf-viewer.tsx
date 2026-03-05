@@ -10,17 +10,17 @@ interface PdfViewerProps {
 export function PdfViewer({ url, isLoading = false }: PdfViewerProps) {
   if (isLoading && !url) {
     return (
-      <div className="h-full flex flex-col items-center justify-center bg-slate-50 text-muted-foreground">
-        <Loader2 className="h-10 w-10 mb-4 animate-spin" />
-        <p className="text-sm">Loading latest PDF...</p>
+      <div className="surface-elevated flex h-full flex-col items-center justify-center gap-3 rounded-2xl text-muted-foreground">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        <p className="text-sm font-medium">Loading latest PDF...</p>
       </div>
     )
   }
 
   if (!url) {
     return (
-      <div className="h-full flex flex-col items-center justify-center bg-slate-50 text-muted-foreground">
-        <FileText className="h-16 w-16 mb-4" />
+      <div className="surface-elevated flex h-full flex-col items-center justify-center gap-3 rounded-2xl text-muted-foreground">
+        <FileText className="h-16 w-16 text-primary/70" />
         <p className="text-lg font-medium">No PDF yet</p>
         <p className="text-sm">Click Compile to generate a PDF preview</p>
       </div>
@@ -30,7 +30,7 @@ export function PdfViewer({ url, isLoading = false }: PdfViewerProps) {
   return (
     <iframe
       src={url}
-      className="w-full h-full border-0"
+      className="h-full w-full rounded-2xl border border-border/70 bg-white shadow-soft"
       title="PDF Preview"
     />
   )

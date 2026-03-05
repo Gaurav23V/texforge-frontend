@@ -22,12 +22,17 @@ A web-based LaTeX editor with real-time PDF preview, built with Next.js and Supa
 - Latest compile wins: stale compile requests are cancelled client-side
 - View-only sharing via shareable links
 - PDF download
+- Premium app-shell UI with semantic tokens, glass surfaces, and gradient accents
+- Motion-enhanced interactions with reduced-motion compliance
+- Optional route-scoped 3D accents on login/dashboard with capability fallbacks
 
 ## Tech Stack
 
 - Next.js 14 (App Router)
 - TypeScript
 - Tailwind CSS + shadcn/ui
+- Framer Motion
+- three + @react-three/fiber + @react-three/drei
 - CodeMirror 6
 - Supabase (Auth, Database, Storage)
 
@@ -102,6 +107,7 @@ src/
 ├── components/
 │   ├── ui/                 # shadcn components
 │   ├── editor/             # CodeMirror editor
+│   ├── visual-effects/     # Route-scoped 3D accents
 │   ├── pdf-viewer.tsx      # PDF iframe display
 │   ├── error-log.tsx       # Compile error display
 │   ├── project-list.tsx    # Dashboard project grid
@@ -116,6 +122,9 @@ src/
     ├── supabase/           # Supabase clients
     ├── types.ts            # TypeScript types
     └── utils.ts            # Utility functions
+
+UI documentation:
+- `UI_GUIDELINES.md` - token usage, component patterns, motion, and accessibility rules
 ```
 
 ## Environment Variables
@@ -154,6 +163,15 @@ pnpm test
 - Newer compile requests abort stale in-flight requests.
 - PDF preview URL adds a cache-bust query parameter using `compiled_at` to force iframe refresh when path remains unchanged.
 
+## UI System and Interaction Model
+
+- Global visual tokens are defined in `src/app/globals.css` and surfaced through Tailwind theme extensions.
+- Reusable layout and display patterns live in `src/components/` (`page-shell`, `section-header`, `stat-card`, `empty-state`).
+- Core primitive components in `src/components/ui/*` have consistent focus rings, elevation, and state styling.
+- Motion uses Framer Motion with graceful static fallbacks when users prefer reduced motion.
+- 3D visuals are route-scoped (login/dashboard only) and gated by capability checks (motion preference, viewport size, hardware hints, WebGL support).
+- Editor and share workflows prioritize readability and speed over visual effects.
+
 ## Testing
 
 This repo uses Vitest + Testing Library for unit and hook tests.
@@ -168,6 +186,19 @@ pnpm test:watch
 # Coverage
 pnpm test:coverage
 ```
+
+UI testing conventions:
+- Add focused tests for visual-state hooks and UX guards (example: reduced-motion behavior in `use-visual-effects.test.ts`).
+- Keep assertions behavior-oriented (text/state/ARIA) rather than snapshot-heavy visual assertions.
+- When adding motion logic, include at least one reduced-motion branch test.
+
+## Reduced-Motion and 3D Fallbacks
+
+- `use-visual-effects` is the single capability gate for motion and 3D behavior.
+- If `prefers-reduced-motion: reduce` is enabled, motion and 3D accents are disabled.
+- If the device is constrained (small viewport, low hardware concurrency/device memory, or data-saver), 3D accents are disabled.
+- If WebGL is unavailable, static gradient backgrounds are used automatically.
+- 3D rendering is paused when the browser tab is hidden to reduce background work.
 
 ## Deployment
 

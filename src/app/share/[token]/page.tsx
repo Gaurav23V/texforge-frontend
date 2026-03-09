@@ -1,9 +1,9 @@
-import { createClient } from "@/lib/supabase/server"
 import { notFound } from "next/navigation"
 import { EmptyState } from "@/components/empty-state"
 import { PageShell } from "@/components/page-shell"
 import { PdfViewer } from "@/components/pdf-viewer"
 import { Button } from "@/components/ui/button"
+import { fetchSharedPdf } from "@/lib/share/fetch-shared-pdf"
 import { Download, Eye, FileText, Link2 } from "lucide-react"
 
 interface SharePageProps {
@@ -12,44 +12,10 @@ interface SharePageProps {
 
 export default async function SharePage({ params }: SharePageProps) {
   const { token } = await params
-  const supabase = await createClient()
+  const sharedPdf = await fetchSharedPdf(token)
 
-  // Fetch share and associated project
-  const { data: share, error: shareError } = await supabase
-    .from("shares")
-    .select("*, projects(*)")
-    .eq("token", token)
-    .is("revoked_at", null)
-    .single()
-
-  if (shareError || !share || !share.projects) {
+  if (!sharedPdf) {
     notFound()
-  }
-
-  const project = share.projects as {
-    id: string
-    name: string
-    tex: string
-  }
-
-  // Fetch the latest compile for this project
-  const { data: compile } = await supabase
-    .from("compiles")
-    .select("*")
-    .eq("project_id", project.id)
-    .eq("status", "success")
-    .order("compiled_at", { ascending: false })
-    .limit(1)
-    .single()
-
-  // Generate signed URL for PDF if available
-  let pdfUrl: string | null = null
-  if (compile?.pdf_path) {
-    const { data: signedData } = await supabase.storage
-      .from("project-pdfs")
-      .createSignedUrl(compile.pdf_path, 3600)
-
-    pdfUrl = signedData?.signedUrl || null
   }
 
   return (
@@ -58,7 +24,7 @@ export default async function SharePage({ params }: SharePageProps) {
         <div className="min-w-0">
           <div className="inline-flex items-center gap-2">
             <FileText className="h-4 w-4 text-primary" />
-            <h1 className="line-clamp-1 font-semibold">{project.name}</h1>
+            <h1 className="line-clamp-1 font-semibold">{sharedPdf.projectName}</h1>
             <span className="status-pill status-pill-info">
               <Eye className="h-3 w-3" />
               View only
@@ -68,9 +34,14 @@ export default async function SharePage({ params }: SharePageProps) {
             Shared PDF link with read-only access.
           </p>
         </div>
-        {pdfUrl ? (
+        {sharedPdf.pdfUrl ? (
           <Button variant="outline" size="sm" asChild>
-            <a href={pdfUrl} download={`${project.name}.pdf`} target="_blank" rel="noopener noreferrer">
+            <a
+              href={sharedPdf.pdfUrl}
+              download={`${sharedPdf.projectName}.pdf`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <Download className="mr-2 h-4 w-4" />
               Download PDF
             </a>
@@ -80,8 +51,8 @@ export default async function SharePage({ params }: SharePageProps) {
 
       <main className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
         <section className="surface-elevated min-h-[65vh] p-3">
-          {pdfUrl ? (
-            <PdfViewer url={pdfUrl} />
+          {sharedPdf.pdfUrl ? (
+            <PdfViewer url={sharedPdf.pdfUrl} />
           ) : (
             <EmptyState
               icon={FileText}
@@ -96,13 +67,13 @@ export default async function SharePage({ params }: SharePageProps) {
             Share details
           </h2>
           <div className="space-y-3 text-sm">
-            <InfoRow label="Project" value={project.name} />
+            <InfoRow label="Project" value={sharedPdf.projectName} />
             <InfoRow label="Access" value="Read only" />
             <InfoRow
               label="Last compile"
               value={
-                compile?.compiled_at
-                  ? new Date(compile.compiled_at).toLocaleString()
+                sharedPdf.compiledAt
+                  ? new Date(sharedPdf.compiledAt).toLocaleString()
                   : "Not compiled yet"
               }
             />

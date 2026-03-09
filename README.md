@@ -20,7 +20,7 @@ A web-based LaTeX editor with real-time PDF preview, built with Next.js and Supa
 - Autosave with debounced updates
 - Compile requests use inline editor buffer (no stale DB read race)
 - Latest compile wins: stale compile requests are cancelled client-side
-- View-only sharing via shareable links
+- View-only sharing via shareable links resolved by the backend service
 - PDF download
 - Premium app-shell UI with semantic tokens, glass surfaces, and gradient accents
 - Motion-enhanced interactions with reduced-motion compliance
@@ -102,7 +102,7 @@ src/
 │   ├── login/              # Google OAuth login
 │   ├── dashboard/          # Project list
 │   ├── editor/[id]/        # LaTeX editor
-│   ├── share/[token]/      # View-only shared PDF
+│   ├── share/[token]/      # View-only shared PDF (data resolved via backend)
 │   └── auth/               # Auth callbacks
 ├── components/
 │   ├── ui/                 # shadcn components
@@ -162,6 +162,12 @@ pnpm test
 - Duplicate compile requests for identical payloads are coalesced client-side.
 - Newer compile requests abort stale in-flight requests.
 - PDF preview URL adds a cache-bust query parameter using `compiled_at` to force iframe refresh when path remains unchanged.
+
+## Share Behavior
+
+- Share links remain read-only and never trigger compilation on open.
+- The share page resolves the token through the backend service, which returns a signed URL for the latest successful compile when one exists.
+- If the project has not been compiled successfully yet, the share page shows an empty state instead of compiling on demand.
 
 ## UI System and Interaction Model
 
